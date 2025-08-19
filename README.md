@@ -6,25 +6,15 @@ Built with Node.js (Express + TypeScript) on the backend and React + Vite + Tail
 ## Features
 
 - Backend API (/api) with:
-
 - Account info endpoint
-
 - Transactions endpoint with filters (from, to, category)
-
 - Balance-after-transaction logic
-
 - Frontend with:
-
 - Responsive layout using Tailwind
-
 - Transactions table with amounts, categories, and balances
-
 - Filters by category and date
-
 - Conditional formatting (negative amounts red, positive green)
-
 - Git commit history showing development steps
-
 - Designed to demonstrate clarity, autonomy, and problem-solving
 
 ---

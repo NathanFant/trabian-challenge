@@ -1,10 +1,9 @@
-import { account, transactions } from "./data";
+import { getAccount, getTransactions } from "./store";
 
 export function getCurrentBalance() {
-  const arr = calcBalances(transactions, account.startingBalance);
-  return arr.length
-    ? arr[arr.length - 1].balanceAfter
-    : account.startingBalance;
+  const acc = getAccount();
+  const arr = calcBalances(getTransactions(), acc.startingBalance);
+  return arr.length ? arr[arr.length - 1].balanceAfter : acc.startingBalance;
 }
 
 export function calcBalances(
@@ -33,10 +32,14 @@ export function filterTx({
   to?: string;
   category?: string;
 }) {
-  return transactions.filter((t) => {
+  return getTransactions().filter((t) => {
     if (from && t.date < from) return false;
     if (to && t.date > to) return false;
     if (category && t.category !== category) return false;
     return true;
   });
+}
+
+export function getAccountWithStart() {
+  return getAccount();
 }
