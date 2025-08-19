@@ -1,57 +1,47 @@
 import fs from "fs";
 import path from "path";
 import { z } from "zod";
+import { fileURLToPath } from "url";
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-const Tx = z.object({
-  id: z.string(),
-  date: z.string(), // YYYY-MM-DD
-  description: z.string(),
-  amount: z.number(),
-  category: z.string(),
-});
 const Account = z.object({
   id: z.string(),
   name: z.string(),
   startingBalance: z.number(),
 });
+const Tx = z.object({
+  id: z.string(),
+  accountId: z.string(),
+  date: z.string(),
+  description: z.string(),
+  amount: z.number(),
+  category: z.string(),
+});
 const DataFile = z.object({
-  account: Account,
+  accounts: z.array(Account),
   transactions: z.array(Tx),
 });
-export type Tx = z.infer<typeof Tx>;
 export type Account = z.infer<typeof Account>;
+export type Tx = z.infer<typeof Tx>;
 
 const DATA_PATH = path.resolve(__dirname, "../data/data.json");
 
-function readJson(): { account: Account; transactions: Tx[] } {
-  const raw = fs.readFileSync(DATA_PATH, "utf-8");
-  const parsed = JSON.parse(raw);
-  return DataFile.parse(parsed);
-}
-
-// simple cache with mtime check
-let cache: {
-  data: { account: Account; transactions: Tx[] };
-  mtimeMs: number;
-} | null = null;
-
-function getData() {
-  const stat = fs.statSync(DATA_PATH);
-  if (!cache || cache.mtimeMs !== stat.mtimeMs) {
-    cache = { data: readJson(), mtimeMs: stat.mtimeMs };
+let cache: { mtimeMs: number; data: z.infer<typeof DataFile> } | null = null;
+function load() {
+  const st = fs.statSync(DATA_PATH);
+  if (!cache || cache.mtimeMs !== st.mtimeMs) {
+    const raw = fs.readFileSync(DATA_PATH, "utf-8");
+    cache = { mtimeMs: st.mtimeMs, data: DataFile.parse(JSON.parse(raw)) };
   }
   return cache.data;
 }
 
-export function getAccount() {
-  return getData().account;
+export function listAccounts() {
+  return load().accounts;
 }
-export function getTransactions() {
-  return getData().transactions;
+export function getAccount(id: string) {
+  return load().accounts.find((a) => a.id === id);
 }
-
-// optional write helper (use carefully)
-export function saveData(data: { account: Account; transactions: Tx[] }) {
-  fs.writeFileSync(DATA_PATH, JSON.stringify(data, null, 2));
-  cache = null; // bust cache
+export function getTransactionsByAccount(id: string) {
+  return load().transactions.filter((t) => t.accountId === id);
 }

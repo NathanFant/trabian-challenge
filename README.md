@@ -53,7 +53,7 @@ trabian-challenge/
 Clone repo and install dependencies:
 
 ```bash
-git clone https://github.com/<your-username>/trabian-challenge.git
+git clone https://github.com/NathanFant/trabian-challenge.git
 cd trabian-challenge
 ```
 
