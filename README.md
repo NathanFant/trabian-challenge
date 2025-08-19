@@ -31,6 +31,7 @@ Built with Node.js (Express + TypeScript) on the backend and React + Vite + Tail
 
 ## Project Structure
 
+```text
 trabian-challenge/
 ├── backend/ # Node.js + Express API
 │ ├── src/
@@ -46,6 +47,7 @@ trabian-challenge/
 │ │ └── index.css
 │ └── vite.config.ts
 └── README.md
+```
 
 ---
 
