@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { AccountSelector } from "./components/AccountSelector";
+import Header from "./components/Header";
 import { MaskedAccount } from "./components/MaskedAccount";
 import { FiltersBar } from "./components/Filters";
 import { TransactionsTable } from "./components/TransactionsTable";
@@ -15,7 +15,6 @@ export default function App() {
   const [txs, setTxs] = useState<Transaction[]>([]);
   const [filters, setFilters] = useState<Filters>({});
 
-  // load accounts once
   useEffect(() => {
     fetchAccounts().then(list => {
       setAccounts(list);
@@ -23,7 +22,6 @@ export default function App() {
     }).catch(console.error);
   }, []);
 
-  // when account or filters change, refetch
   useEffect(() => {
     if (!selectedId) return;
     fetchAccount(selectedId).then(setAccount).catch(console.error);
@@ -36,25 +34,13 @@ export default function App() {
   }, [account, selectedId]);
 
   return (
-    <div className="max-w-5xl mx-auto p-4 space-y-4">
-      {/* Top bar */}
-      <div className="flex items-center justify-between">
-        <div className="glass px-4 py-2">
-          <h1 className="text-2xl font-bold">Nathan&apos;s Bank</h1>
-          <div className="text-sm text-zinc-400">{headerSubtitle}</div>
-        </div>
-        <AccountSelector
-          accounts={accounts}
-          selectedId={selectedId}
-          onSelect={setSelectedId}
-        />
+    <>
+      <Header accounts={accounts} selectedId={selectedId} onSelect={setSelectedId} />
+      <div className="max-w-5xl mx-auto p-4 space-y-4">
+        <MaskedAccount account={account} />
+        <FiltersBar value={filters} onChange={setFilters} categories={CATEGORIES} />
+        <TransactionsTable txs={txs} />
       </div>
-
-      <MaskedAccount account={account} />
-
-      <FiltersBar value={filters} onChange={setFilters} categories={CATEGORIES} />
-
-      <TransactionsTable txs={txs} />
-    </div>
+    </>
   );
 }
