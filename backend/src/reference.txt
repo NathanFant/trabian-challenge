@@ -1,0 +1,119 @@
+BASE URL
+http://localhost:4000
+
+ENDPOINTS
+
+GET /api/accounts
+Desc: List all accounts.
+Query: none
+Response: [Account]
+Example:
+[
+{ "id":"12345678","name":"Checking 1","startingBalance":2500 },
+{ "id":"98765432","name":"Savings 1","startingBalance":5200 }
+]
+
+GET /api/account
+Desc: Get one account + computed currentBalance.
+Query:
+accountId (string, 8 digits) – required
+Response: AccountWithBalance
+Example:
+{ "id":"12345678","name":"Checking 1","startingBalance":2500,"currentBalance":4278.62 }
+Errors:
+400 { "error":"accountId_required" }
+404 { "error":"account_not_found" }
+
+GET /api/transactions
+Desc: List transactions for an account, with balanceAfter per tx.
+Query:
+accountId (string, 8 digits) – required
+from (YYYY-MM-DD) – optional
+to (YYYY-MM-DD) – optional
+category (string) – optional
+limit (int, 1..500, default 50) – optional
+Sorting: date desc in response
+Response: [TransactionWithBalance]
+Example:
+[
+{
+"id":"t-12345678-39",
+"accountId":"12345678",
+"date":"2025-09-05",
+"description":"Paycheck - Employer Inc",
+"amount":1850,
+"category":"Income",
+"balanceAfter":4278.62
+}
+]
+Errors:
+400 { "error":"invalid_query", "details": ... }
+400 { "error":"accountId_required" }
+404 { "error":"account_not_found" }
+
+GET /health
+Desc: Liveness check.
+Response: { "ok": true }
+
+GET /docs
+Desc: Swagger UI for this API.
+
+DATA MODELS
+Account:
+id: string (8-digit numeric, e.g., "12345678")
+name: string
+startingBalance: number
+
+AccountWithBalance:
+Account + currentBalance: number
+
+Transaction:
+id: string
+accountId: string (8-digit)
+date: string (YYYY-MM-DD)
+description: string
+amount: number (positive = income, negative = expense)
+category: string (see CATEGORIES)
+
+TransactionWithBalance:
+Transaction + balanceAfter: number
+
+CATEGORIES
+Food, Bills, Income, Transport, Health, Entertainment, Shopping, Travel
+
+REQUEST RULES
+
+Frontend must always provide accountId for /api/account and /api/transactions.
+
+Use query params for filters (read-only API; no mutation endpoints).
+
+Dates are inclusive string compares on YYYY-MM-DD.
+
+limit defaults to 50, max 500.
+
+ERRORS (COMMON)
+400 invalid_query
+400 accountId_required
+404 account_not_found
+404 not_found (unmatched route)
+500 internal_error
+
+BACKEND BEHAVIOR NOTES
+
+Balance calculation: sort tx asc by date, run running total from startingBalance; return with balanceAfter; then sort desc for API output.
+
+CORS enabled.
+
+Data source: backend/data/data.json (multi-account; seeded).
+
+Account selection can also be sent via header x-account-id, but UI should pass accountId in query.
+
+SAMPLE CURL
+List accounts:
+curl :4000/api/accounts
+
+Account details:
+curl ":4000/api/account?accountId=12345678"
+
+Recent transactions (Food in Aug, limit 20):
+curl ":4000/api/transactions?accountId=12345678&from=2025-08-01&to=2025-08-31&category=Food&limit=20"
