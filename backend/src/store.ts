@@ -23,6 +23,16 @@ const DataFile = z.object({
 });
 export type Account = z.infer<typeof Account>;
 export type Tx = z.infer<typeof Tx>;
+export const CATEGORIES = [
+  "Food",
+  "Bills",
+  "Income",
+  "Transport",
+  "Health",
+  "Entertainment",
+  "Shopping",
+  "Travel",
+] as const;
 
 const DATA_PATH = path.resolve(__dirname, "../data/data.json");
 

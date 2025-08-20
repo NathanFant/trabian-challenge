@@ -152,21 +152,32 @@ function genTxForAccount(
   return txs.sort((a, b) => a.date.localeCompare(b.date));
 }
 
-function main() {
-  const accounts: Account[] = [
-    { id: "acc-1", name: "Checking 1", startingBalance: 2500 },
-    { id: "acc-2", name: "Checking 2", startingBalance: 1800 },
-    { id: "acc-3", name: "Savings 1", startingBalance: 5200 },
-    { id: "acc-4", name: "Joint", startingBalance: 3000 },
-    { id: "acc-5", name: "Business", startingBalance: 8000 },
-  ];
+function genAccountId(n: number, rng: () => number): string[] {
+  const ids = new Set<string>();
+  while (ids.size < n) {
+    const num = Math.floor(rng() * 1_0000_0000); // 0–99999999
+    const id = num.toString().padStart(8, "0");
+    ids.add(id);
+  }
+  return Array.from(ids);
+}
 
+function main() {
   const rng = mulberry32(42);
   const startDate = new Date("2025-07-20");
-  const transactions: Tx[] = [];
 
+  const ids = genAccountId(5, rng);
+  const accounts: Account[] = [
+    { id: ids[0], name: "Checking 1", startingBalance: 2500 },
+    { id: ids[1], name: "Checking 2", startingBalance: 1800 },
+    { id: ids[2], name: "Savings 1", startingBalance: 5200 },
+    { id: ids[3], name: "Joint", startingBalance: 3000 },
+    { id: ids[4], name: "Business", startingBalance: 8000 },
+  ];
+
+  const transactions: Tx[] = [];
   for (const acc of accounts) {
-    transactions.push(...genTxForAccount(rng, acc.id, startDate, 40));
+    transactions.push(...genTxForAccount(rng, acc.id, startDate, 50));
   }
 
   fs.mkdirSync(path.dirname(DATA_PATH), { recursive: true });
