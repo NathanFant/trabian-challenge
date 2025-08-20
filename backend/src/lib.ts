@@ -1,4 +1,4 @@
-import { getAccount, getTransactionsByAccount, Tx } from "./store.js";
+import { getAccount, getTransactionsByAccount } from "./store.js";
 
 export function calcBalances(
   txs: Pick<Tx, "date" | "amount" | "description" | "category">[],

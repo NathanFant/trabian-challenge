@@ -1,4 +1,3 @@
-// backend/src/swagger.ts
 import { OpenAPIV3 } from "openapi-types";
 
 export const swaggerSpec: OpenAPIV3.Document = {
@@ -13,9 +12,9 @@ export const swaggerSpec: OpenAPIV3.Document = {
     schemas: {
       Account: {
         type: "object",
-        required: ["id", "name", "startingBalance", "currentBalance"],
+        required: ["id", "name", "startingBalance"],
         properties: {
-          id: { type: "string" },
+          id: { type: "string", description: "8-digit account id" },
           name: { type: "string" },
           startingBalance: { type: "number", format: "double" },
           currentBalance: { type: "number", format: "double" },
@@ -25,6 +24,7 @@ export const swaggerSpec: OpenAPIV3.Document = {
         type: "object",
         required: [
           "id",
+          "accountId",
           "date",
           "description",
           "amount",
@@ -33,6 +33,7 @@ export const swaggerSpec: OpenAPIV3.Document = {
         ],
         properties: {
           id: { type: "string" },
+          accountId: { type: "string" },
           date: { type: "string", format: "date" },
           description: { type: "string" },
           amount: { type: "number", format: "double" },
@@ -43,9 +44,36 @@ export const swaggerSpec: OpenAPIV3.Document = {
     },
   },
   paths: {
+    "/api/accounts": {
+      get: {
+        summary: "List accounts",
+        responses: {
+          "200": {
+            description: "Accounts",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "array",
+                  items: { $ref: "#/components/schemas/Account" },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
     "/api/account": {
       get: {
         summary: "Get account info and current balance",
+        parameters: [
+          {
+            name: "accountId",
+            in: "query",
+            required: true,
+            schema: { type: "string" },
+            description: "8-digit account id",
+          },
+        ],
         responses: {
           "200": {
             description: "Account details",
@@ -55,6 +83,7 @@ export const swaggerSpec: OpenAPIV3.Document = {
               },
             },
           },
+          "404": { description: "Not found" },
         },
       },
     },
@@ -62,6 +91,12 @@ export const swaggerSpec: OpenAPIV3.Document = {
       get: {
         summary: "Get transactions with optional filters",
         parameters: [
+          {
+            name: "accountId",
+            in: "query",
+            required: true,
+            schema: { type: "string" },
+          },
           {
             name: "from",
             in: "query",
@@ -73,6 +108,12 @@ export const swaggerSpec: OpenAPIV3.Document = {
             schema: { type: "string", format: "date" },
           },
           { name: "category", in: "query", schema: { type: "string" } },
+          {
+            name: "limit",
+            in: "query",
+            schema: { type: "integer", minimum: 1, maximum: 500 },
+            description: "Defaults to 50",
+          },
         ],
         responses: {
           "200": {
@@ -86,6 +127,7 @@ export const swaggerSpec: OpenAPIV3.Document = {
               },
             },
           },
+          "404": { description: "Account not found" },
         },
       },
     },
