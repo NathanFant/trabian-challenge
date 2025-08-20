@@ -1,12 +1,24 @@
 # Nathan's Bank
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
 This was build in 2-4 hour sessions. Prior to begining this project, I had not used Tailwind or Node.js at all, and had barely touched TypeScript.
 
 Multi-account demo bank. React + Vite + Tailwind frontend. Node.js + Express + TypeScript backend. Read-only API with filters. Data seeded to JSON. Swagger docs included.
 
+## Table of Contents
+
+1. [Stack](#stack)
+2. [Features](#features)
+3. [API (summary)](#api-summary)
+4. [Run Locally](#run-locally)
+5. [Project Structure](#project-structure)
+6. [Implementation Notes](#implementation-notes)
+7. [Future Improvements](#future-improvements)
+
 ## Stack
 
-- Frontend: React, Vite, TyepScript, TailwindCSS
+- Frontend: React, Vite, TypeScript, TailwindCSS
 - Backend: Node.js, Express, TypeScript, Zod
 - Docs: SwaggerUI (`/docs`)
 - Dev proxy: Vite -> Express on `:4000`
