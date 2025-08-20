@@ -1,155 +1,109 @@
-# Trabian Coding Challenge – Bank Account Web App
+# Nathan's Bank
 
-A simple full-stack web application that displays account information, current balance, and recent transactions.
-Built with Node.js (Express + TypeScript) on the backend and React + Vite + Tailwind CSS on the frontend.
+This was build in 2-4 hour sessions. Prior to begining this project, I had not used Tailwind or Node.js at all, and had barely touched TypeScript.
+
+Multi-account demo bank. React + Vite + Tailwind frontend. Node.js + Express + TypeScript backend. Read-only API with filters. Data seeded to JSON. Swagger docs included.
+
+## Stack
+
+- Frontend: React, Vite, TyepScript, TailwindCSS
+- Backend: Node.js, Express, TypeScript, Zod
+- Docs: SwaggerUI (`/docs`)
+- Dev proxy: Vite -> Express on `:4000`
 
 ## Features
 
-- Backend API (/api) with:
-- Account info endpoint
-- Transactions endpoint with filters (from, to, category)
-- Balance-after-transaction logic
-- Frontend with:
-- Responsive layout using Tailwind
-- Transactions table with amounts, categories, and balances
-- Filters by category and date
-- Conditional formatting (negative amounts red, positive green)
-- Git commit history showing development steps
-- Designed to demonstrate clarity, autonomy, and problem-solving
+- 5 demo accounts with unique 8-digit IDs
+- Current balance computed from starting balance + transactions
+- Transactions table with running `balanceAfter`
+- Filter by date range and category
+- Account selector in header
+- Masked account number with reveal
+- Dark glassmorphism styling (Tailwind)
 
----
+## API (summary)
 
-## Project Structure
+Base URL: `http://localhost:4000`
 
-```text
-trabian-challenge/
-├── backend/ # Node.js + Express API
-│ ├── src/
-│ │ ├── data.ts
-│ │ ├── lib.ts
-│ │ └── index.ts
-│ └── tsconfig.json
-├── frontend/ # React + Vite + Tailwind app
-│ ├── src/
-│ │ ├── App.tsx
-│ │ ├── api.ts
-│ │ ├── utils.ts
-│ │ └── index.css
-│ └── vite.config.ts
-└── README.md
+- `GET /api/accounts` → `[Account]`
+- `GET /api/account?accountId=<8digits>` → `Account` + `currentBalance`
+- `GET /api/transactions?accountId=<8digits>&from=YYYY-MM-DD&to=YYYY-MM-DD&category=Food&limit=50` → `[Transaction]` (sorted desc)
+- `GET /health` → `{ ok: true }`
+- Docs: `GET /docs`
+
+Types:
+
+```ts
+Account { id: string; name: string; startingBalance: number; currentBalance?: number }
+Transaction { id: string; accountId: string; date: string; description: string; amount: number; category: string; balanceAfter: number }
 ```
 
----
-
-## Getting Started
-
-### Prerequisites
-
-- Node.js 18+ (tested on Node 22)
-- npm 9+
-
-### Setup
-
-Clone repo and install dependencies:
+Quick cURL:
 
 ```bash
-git clone https://github.com/NathanFant/trabian-challenge.git
-cd trabian-challenge
+curl :4000/api/accounts
+curl ":4000/api/account?accountId=12345678"
+curl ":4000/api/transactions?accountId=12345678&from=2025-08-01&to=2025-08-31&category=Food&limit=20"
 ```
 
-### Backend
+## Run Locally
+
+### 1) Backend
 
 ```bash
 cd backend
 npm install
-npm run dev
+npm run seed # writes data/data.json with 5 accounts × 40 tx each
+npm run dev # http://localhost:4000  (Swagger at /docs)
 ```
 
-Backend will run on http://localhost:4000
-
-API docs available at http://localhost:4000/docs
-(Swagger UI).
-
-### Frontend
+### 2) Frontend
 
 ```bash
 cd frontend
 npm install
-npm run dev
+npm run dev # http://localhost:5173 (proxied to :4000 for /api/*)
 ```
 
-Frontend will run on http://localhost:5173
-(proxy forwards /api calls to backend).
+## Project Structure
 
----
-
-## API Endpoints
-
-`GET /api/account`
-
-Returns account info and current balance.
-
-Example:
-
-```json
-{
-  "id": "acc-1",
-  "name": "Checking",
-  "startingBalance": 2500,
-  "currentBalance": 3313.37
-}
+```bash
+trabian-challenge/
+├─ backend/
+│  ├─ src/
+│  │  ├─ index.ts # Express routes + Swagger mount
+│  │  ├─ lib.ts # domain logic (balances, filters)
+│  │  ├─ store.ts # data access + Zod validation
+│  │  ├─ swagger.ts # OpenAPI spec
+│  │  └─ seed.ts # generate demo data (accounts + tx)
+│  └─ data/data.json # generated dataset
+├─ frontend/
+│  ├─ src/
+│  │  ├─ api.ts # API client
+│  │  ├─ types.ts
+│  │  ├─ utils.ts
+│  │  ├─ App.tsx
+│  │  ├─ index.css # Tailwind base + glass utilities
+│  │  └─ components/
+│  │     ├─ Header.tsx
+│  │     ├─ MaskedAccount.tsx
+│  │     ├─ Filters.tsx
+│  │     └─ TransactionsTable.tsx
+│  └─ vite.config.ts # proxy /api → :4000
+└─ README.md
 ```
 
----
+## Implementation Notes
 
-`GET /api/transactions`
+- Mutli-account: FE always sends `accountId` (8-digit) to the API.
+- Balance Calc: sort tx asc, run unning sum from `startingBalance`, attach `balanceAfter`, then return desc.
+- Validation: Zod validates data.json on load and query params for `/api/transactions`.
+- Styling: Tailwind utilities; `.glass` class provides blur + subtle border. (This is my weak suit)
 
-Optional query parameters:
+## Future improvments
 
-- `from` (YYYY-MM-DD)
-- `to` (YYYY-MM-DD)
-- `category` (string)
-
-Example:
-
-`/api/transactions?from=2025-07-01&to=2025-07-31&category=Food`
-
-Response:
-
-```json
-[
-  {
-    "id": "t1",
-    "date": "2025-07-28",
-    "description": "Groceries",
-    "amount": -82.13,
-    "category": "Food",
-    "balanceAfter": 2417.87
-  }
-]
-```
-
----
-
-## Frontend UI
-
-- Header shows account name and current balance.
-- Table lists transactions with columns:
-- Date
-- Description
-- Amount (green for credit, red for debit)
-- Category (styled pill)
-- Balance after transaction
-- Filters above the table:
-- Date range (from / to)
-- Category dropdown
-
----
-
-### Development Notes
-
-- Backend written in TypeScript, using ts-node-dev for hot reload.
-- Frontend bootstrapped with Vite, styled with Tailwind.
-- Commit history shows incremental development steps (API first, then UI).
-- Data is mock JSON in memory for simplicity.
-- Balance-after logic is computed server-side to ensure a single source of truth.
+- Pagination and infinite scroll
+- Persisted filters in URL
+- POST `/transactions` with schema validation (disabled by design for this challenge)
+- Dockerfile + docker-compose
+- Redoc in addition to swagger
